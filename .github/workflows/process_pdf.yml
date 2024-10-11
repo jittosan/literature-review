@@ -23,7 +23,7 @@ jobs:
 
       - name: Process PDF and update README
         run: |
-          python process_pdf.py
+          python ./.github/workflows/process_pdf.py
           
       - name: Commit changes
         run: |
