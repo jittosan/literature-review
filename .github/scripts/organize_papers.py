@@ -3,61 +3,150 @@ import glob
 import re
 import requests
 from PyPDF2 import PdfReader
+from urllib.parse import quote
 
 # Function to extract DOI and Title from PDF
 def extract_metadata(pdf_path):
-    reader = PdfReader(pdf_path)
-    title = reader.metadata.title if reader.metadata and reader.metadata.title else None
-    text = ""
-    for page in reader.pages[:5]:  # Read the first 5 pages to find DOI
-        text += page.extract_text() or ""
-    doi_match = re.search(r'\b10\.\d{4,9}/[-._;()/:A-Z0-9]+\b', text, re.I)
-    doi = doi_match.group(0) if doi_match else None
-    return title, doi
+    try:
+        reader = PdfReader(pdf_path)
+        title = reader.metadata.title if reader.metadata and reader.metadata.title else None
+        text = ""
+        for page in reader.pages[:5]:  # Read the first 5 pages to find DOI
+            text += page.extract_text() or ""
+        doi_match = re.search(r'\b10\.\d{4,9}/[-._;()/:A-Z0-9]+\b', text, re.I)
+        doi = doi_match.group(0) if doi_match else None
+        return title, doi
+    except Exception as e:
+        print(f"Error extracting metadata from {pdf_path}: {e}")
+        return None, None
 
 # Function to fetch metadata from CrossRef API
 def fetch_crossref_metadata(doi):
-    url = f"https://api.crossref.org/works/{doi}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json()['message']
-    return None
+    try:
+        url = f"https://api.crossref.org/works/{doi}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.json()['message']
+        else:
+            print(f"Failed to fetch metadata for DOI {doi}: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"Error fetching CrossRef metadata for DOI {doi}: {e}")
+        return None
 
-# Update main README.md
+# Function to update a section between start and end markers
+def update_table_section(readme_path, start_marker, end_marker, new_table_content):
+    if not os.path.exists(readme_path):
+        print(f"README file {readme_path} does not exist. Creating a new one.")
+        with open(readme_path, 'w') as f:
+            f.write("# " + os.path.basename(os.path.dirname(readme_path)) + "\n\n")
+            f.write(new_table_content)
+        return
+
+    with open(readme_path, 'r') as f:
+        content = f.read()
+
+    # Regex to find content between markers
+    pattern = re.compile(
+        f"({re.escape(start_marker)})(.*?)(\n?{re.escape(end_marker)})",
+        re.DOTALL
+    )
+
+    # New table content with markers
+    new_section = f"{start_marker}\n{new_table_content}\n{end_marker}"
+
+    if pattern.search(content):
+        # Replace existing section
+        updated_content = pattern.sub(new_section, content)
+    else:
+        # If markers not found, append the new section
+        updated_content = content.strip() + "\n\n" + new_section
+
+    with open(readme_path, 'w') as f:
+        f.write(updated_content)
+
+# Function to create or update the main README.md with categories
 def update_main_readme(categories):
-    readme_content = """# Paper Organizer
+    main_readme = 'README.md'
+    start_marker = '<!-- CATEGORIES_TABLE_START -->'
+    end_marker = '<!-- CATEGORIES_TABLE_END -->'
 
-This repository helps organize and manage scientific paper PDFs for various research projects.
-
-## Objectives
-
-- Automate the organization of PDFs into categories.
-- Extract metadata from PDFs.
-- Maintain an updated list of papers with quick access.
-
-## Categories
-
-The following categories are available:
-
-| Category Name | Description |
-|---------------|-------------|
-"""
+    table_header = "| Category Name | Description |\n|---------------|-------------|"
+    table_rows = ""
     for category in sorted(categories):
-        readme_content += f"| [{category}]({category}/) | Description of {category} |\n"
+        # URL-encode the category name for the link
+        category_link = quote(category) + '/'
+        table_rows += f"| [{category}]({category_link}) | Description of {category} |\n"
 
-    with open('README.md', 'w') as f:
-        f.write(readme_content)
+    new_table = f"{table_header}\n{table_rows}"
+    update_table_section(main_readme, start_marker, end_marker, new_table)
 
-# Iterate over PDFs in sub-directories
+# Function to create or update a subdirectory README.md
+def create_or_update_sub_readme(current_dir, subdirectories, papers_info):
+    readme_path = os.path.join(current_dir, 'README.md')
+    
+    # Define markers for subcategories and papers tables
+    subcat_start = '<!-- SUBCATEGORIES_TABLE_START -->'
+    subcat_end = '<!-- SUBCATEGORIES_TABLE_END -->'
+    papers_start = '<!-- PAPERS_TABLE_START -->'
+    papers_end = '<!-- PAPERS_TABLE_END -->'
+
+    # Create tables content
+    # Subcategories Table
+    if subdirectories:
+        subcat_header = "| Subcategory Name | Description |\n|------------------|-------------|"
+        subcat_rows = ""
+        for sub in sorted(subdirectories):
+            sub_link = quote(sub) + '/'
+            subcat_rows += f"| [{sub}]({sub_link}) | Description of {sub} |\n"
+    else:
+        subcat_header = "| Subcategory Name | Description |\n|------------------|-------------|"
+        subcat_rows = "| No Subcategories | - |\n"
+
+    subcat_table = f"{subcat_header}\n{subcat_rows}"
+
+    # Papers Table
+    if papers_info:
+        papers_header = "| Title | Authors | Journal | Year |\n|-------|---------|---------|------|"
+        papers_rows = ""
+        for info in papers_info:
+            # URL-encode the PDF path for the link
+            pdf_url = quote(info['pdf_path'])
+            title_link = f"[{info['title']}]({pdf_url})"
+            # Journal as a link to the published paper's URL
+            if info['journal_url']:
+                journal_link = f"[{info['journal']}]({info['journal_url']})"
+            else:
+                journal_link = info['journal']
+            papers_rows += f"| {title_link} | {info['authors']} | {journal_link} | {info['year']} |\n"
+    else:
+        papers_header = "| Title | Authors | Journal | Year |\n|-------|---------|---------|------|"
+        papers_rows = "| No papers found | - | - | - |\n"
+
+    papers_table = f"{papers_header}\n{papers_rows}"
+
+    # Update subcategories table
+    update_table_section(readme_path, subcat_start, subcat_end, subcat_table)
+
+    # Update papers table
+    update_table_section(readme_path, papers_start, papers_end, papers_table)
+
+# Main function to organize papers
 def organize_papers():
+    # Get all subdirectories (categories) in the root directory
     categories = [d for d in os.listdir('.') if os.path.isdir(d) and not d.startswith('.')]
     update_main_readme(categories)
+    
     for category in categories:
-        pdf_files = glob.glob(f"{category}/*.pdf")
-        if not pdf_files:
-            continue
-        readme_path = os.path.join(category, 'README.md')
+        # Navigate into the category directory
+        os.chdir(category)
+        print(f"Processing category: {category}")
+
+        # Get list of subdirectories and PDF files in the current category
+        subdirectories = [d for d in os.listdir('.') if os.path.isdir(d) and not d.startswith('.')]
+        pdf_files = glob.glob("*.pdf")
         papers_info = []
+
         for pdf_file in pdf_files:
             print(f"Processing {pdf_file}")
             title, doi = extract_metadata(pdf_file)
@@ -65,38 +154,41 @@ def organize_papers():
             if doi:
                 metadata = fetch_crossref_metadata(doi)
             if metadata:
+                # Extract necessary metadata
                 title = metadata.get('title', [title])[0] if metadata.get('title') else title
                 authors = ', '.join([author.get('family', '') for author in metadata.get('author', [])])
                 journal = metadata.get('container-title', [''])[0]
+                journal_url = metadata.get('URL', '')  # URL where the paper is published
                 year = metadata.get('published-print', {}).get('date-parts', [[None]])[0][0]
             else:
-                authors = journal = year = ''
+                authors = journal = journal_url = year = ''
             if not title:
                 title = os.path.splitext(os.path.basename(pdf_file))[0]
             # Rename PDF to the paper title
-            safe_title = title.replace('/', '-').replace('\\', '-').replace(':', '-')
-            new_pdf_path = os.path.join(category, f"{safe_title}.pdf")
-            if pdf_file != new_pdf_path:
-                os.rename(pdf_file, new_pdf_path)
+            safe_title = re.sub(r'[\\/:"*?<>|]+', '-', title)  # Replace invalid filename characters
+            new_pdf_name = f"{safe_title}.pdf"
+            new_pdf_path = os.path.join('.', new_pdf_name)
+            if pdf_file != new_pdf_name:
+                try:
+                    os.rename(pdf_file, new_pdf_name)
+                    print(f"Renamed {pdf_file} to {new_pdf_name}")
+                except Exception as e:
+                    print(f"Error renaming {pdf_file} to {new_pdf_name}: {e}")
             # Collect paper info
             papers_info.append({
                 'title': title,
                 'authors': authors,
                 'journal': journal,
+                'journal_url': journal_url,
                 'year': year,
-                'pdf_path': os.path.basename(new_pdf_path)
+                'pdf_path': new_pdf_name
             })
-        # Update README.md in the category folder
-        with open(readme_path, 'w') as readme_file:
-            readme_file.write(f"# Papers in {category}\n\n")
-            if papers_info:
-                readme_file.write("| Title | Authors | Journal | Year |\n")
-                readme_file.write("|-------|---------|---------|------|\n")
-                for info in papers_info:
-                    title_link = f"[{info['title']}]({info['pdf_path']})"
-                    readme_file.write(f"| {title_link} | {info['authors']} | {info['journal']} | {info['year']} |\n")
-            else:
-                readme_file.write("No papers found in this category.\n")
+        
+        # Create or update the README.md in the current category
+        create_or_update_sub_readme('.', subdirectories, papers_info)
+
+        # Move back to the root directory
+        os.chdir('..')
 
 if __name__ == "__main__":
     organize_papers()

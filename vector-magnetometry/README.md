@@ -1,5 +1,20 @@
-# Papers in vector magnetometry
+# Vector Magnetometry
 
+Description for Category1.
+
+## Subcategories
+
+<!-- SUBCATEGORIES_TABLE_START -->
+| Subcategory Name | Description |
+|------------------|-------------|
+| [SubCategoryA](SubCategoryA/) | Description of SubCategoryA |
+| [SubCategoryB](SubCategoryB/) | Description of SubCategoryB |
+<!-- SUBCATEGORIES_TABLE_END -->
+
+## Papers
+
+<!-- PAPERS_TABLE_START -->
 | Title | Authors | Journal | Year |
 |-------|---------|---------|------|
-| [Magnetic-field-compensation optical vector magnetometer](Magnetic-field-compensation optical vector magnetometer.pdf) | Papoyan, Shmavonyan, Khanbekyan, Khanbekyan, Marinelli, Mariotti | Applied Optics | 2016 |
+| [Sample Paper Title](Sample_Paper_Title.pdf) | Author A, Author B | [Journal Name](https://journal-url.com) | 2023 |
+<!-- PAPERS_TABLE_END -->
