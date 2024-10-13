@@ -2,8 +2,6 @@
 
 Papers describing different optical techniques for magnetometry
 
-## Papers
-
 <!-- PAPERS_TABLE_START -->
 ## Papers
 
