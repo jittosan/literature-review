@@ -4,7 +4,7 @@ name: Organize Papers
 on:
   push:
     branches:
-      - main
+      - main  # Change to your default branch if different
     paths:
       - '**.pdf'
       - '**/'
@@ -12,9 +12,12 @@ on:
 jobs:
   organize_papers:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false  # Disable automatic token usage
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -24,15 +27,26 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --upgrade PyPDF2 requests
+          pip install PyPDF2 requests
 
       - name: Run Organize Script
-        run: python .github/scripts/organize_papers.py
+        run: python organize_papers.py
 
-      - name: Commit Changes
+      - name: Configure Git
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add .
+
+      - name: Add Changes
+        run: git add .
+
+      - name: Commit Changes
+        run: |
           git commit -m "Organized new papers" || echo "No changes to commit"
-          git push
+
+      - name: Push Changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+          git push origin main
