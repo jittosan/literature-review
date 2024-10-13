@@ -108,8 +108,7 @@ def create_or_update_sub_readme(current_dir, subdirectories, papers_info):
         for sub in sorted(subdirectories):
             sub_link = quote(sub) + '/'
             subcat_rows += f"| [{sub}]({sub_link}) | Description of {sub} |\n"
-        subcat_table = f"{subcat_table_header}\n{subcat_rows}"
-        subcat_content = subcat_header + subcat_table
+        subcat_content = f"{subcat_header}{subcat_table_header}\n{subcat_rows}"
     else:
         subcat_content = ""  # No subcategories, so no content
 
@@ -128,23 +127,13 @@ def create_or_update_sub_readme(current_dir, subdirectories, papers_info):
             else:
                 journal_link = info['journal']
             papers_rows += f"| {title_link} | {info['authors']} | {journal_link} | {info['year']} |\n"
-        papers_table = f"{papers_table_header}\n{papers_rows}"
+        papers_content = f"{papers_header}{papers_table_header}\n{papers_rows}"
     else:
-        papers_header = "## Papers\n\n"
-        papers_table = "| Title | Authors | Journal | Year |\n|-------|---------|---------|------|\n| No papers found | - | - | - |\n"
-    
-    papers_content = papers_header + papers_table
+        papers_content = "| Title | Authors | Journal | Year |\n|-------|---------|---------|------|\n| No papers found | - | - | - |\n"
 
     # Combine Subcategories and Papers Content with Markers
     if subcat_content:
         # Both Subcategories and Papers
-        complete_content = f"{subcat_start}\n{subcat_content}\n{subcat_end}\n\n{papers_start}\n{papers_table_header}\n{papers_rows}\n{papers_end}"
-    else:
-        # Only Papers
-        complete_content = f"{papers_start}\n{papers_table_header}\n{papers_rows}\n{papers_end}"
-
-    # Update or remove Subcategories section
-    if subdirectories:
         # Update Subcategories section
         update_section(readme_path, subcat_start, subcat_end, subcat_content)
     else:
@@ -152,7 +141,7 @@ def create_or_update_sub_readme(current_dir, subdirectories, papers_info):
         update_section(readme_path, subcat_start, subcat_end, "")
 
     # Update Papers section
-    update_section(readme_path, papers_start, papers_end, papers_table if papers_info else "| Title | Authors | Journal | Year |\n|-------|---------|---------|------|\n| No papers found | - | - | - |\n")
+    update_section(readme_path, papers_start, papers_end, papers_content)
 
 # Main function to organize papers
 def organize_papers():
@@ -213,5 +202,6 @@ def organize_papers():
         # Move back to the root directory
         os.chdir('..')
 
+# Run the organizer
 if __name__ == "__main__":
     organize_papers()
