@@ -1,0 +1,38 @@
+# .github/workflows/organize-papers.yml
+name: Organize Papers
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.pdf'
+      - '**/'
+
+jobs:
+  organize_papers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade PyPDF2 requests
+
+      - name: Run Organize Script
+        run: python organize_papers.py
+
+      - name: Commit Changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Organized new papers" || echo "No changes to commit"
+          git push
