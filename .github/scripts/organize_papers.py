@@ -133,8 +133,7 @@ def create_or_update_sub_readme(current_dir, subdirectories, papers_info):
 
     # Combine Subcategories and Papers Content with Markers
     if subcat_content:
-        # Both Subcategories and Papers
-        # Update Subcategories section
+        # Update Subcategories section first
         update_section(readme_path, subcat_start, subcat_end, subcat_content)
     else:
         # Remove Subcategories section if it exists
