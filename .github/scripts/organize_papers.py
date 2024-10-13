@@ -12,7 +12,9 @@ def extract_metadata(pdf_path):
         title = reader.metadata.title if reader.metadata and reader.metadata.title else None
         text = ""
         for page in reader.pages[:5]:  # Read the first 5 pages to find DOI
-            text += page.extract_text() or ""
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text
         doi_match = re.search(r'\b10\.\d{4,9}/[-._;()/:A-Z0-9]+\b', text, re.I)
         doi = doi_match.group(0) if doi_match else None
         return title, doi
@@ -37,10 +39,11 @@ def fetch_crossref_metadata(doi):
 # Function to update a section between start and end markers
 def update_section(readme_path, start_marker, end_marker, new_content):
     if not os.path.exists(readme_path):
-        print(f"README file {readme_path} does not exist. Creating a new one.")
+        print(f"README file {readme_path} does not exist. Creating a new one with default content.")
         with open(readme_path, 'w') as f:
             # Initialize README with a header
-            f.write("# " + os.path.basename(os.path.dirname(readme_path)) + "\n\n")
+            header = f"# {os.path.basename(os.path.dirname(readme_path))}\n\n"
+            f.write(header)
             # Insert the new content if provided
             if new_content:
                 f.write(new_content)
@@ -74,6 +77,37 @@ def update_section(readme_path, start_marker, end_marker, new_content):
         # Add a newline at the end if content exists
         f.write(updated_content + "\n" if updated_content else "")
 
+# Function to create default README.md with markers
+def create_default_readme(readme_path):
+    default_content = ""
+    # Check if the directory is the root or a subdirectory
+    dir_name = os.path.basename(os.path.dirname(readme_path))
+    default_content += f"# {dir_name}\n\n"
+    default_content += "Description for " + dir_name + ".\n\n"
+
+    # Initialize Subcategories section
+    subcat_start = '<!-- SUBCATEGORIES_SECTION_START -->'
+    subcat_end = '<!-- SUBCATEGORIES_SECTION_END -->'
+    default_content += f"{subcat_start}\n"
+    default_content += "## Subcategories\n\n"
+    default_content += "| Subcategory Name | Description |\n|------------------|-------------|\n"
+    default_content += "| [Sub Category A](Sub%20Category%20A/) | Description of Sub Category A |\n"
+    default_content += "| [Sub Category B](Sub%20Category%20B/) | Description of Sub Category B |\n"
+    default_content += f"{subcat_end}\n\n"
+
+    # Initialize Papers section
+    papers_start = '<!-- PAPERS_TABLE_START -->'
+    papers_end = '<!-- PAPERS_TABLE_END -->'
+    default_content += f"{papers_start}\n"
+    default_content += "## Papers\n\n"
+    default_content += "| Title | Authors | Journal | Year |\n|-------|---------|---------|------|\n"
+    default_content += "| [Sample Paper Title](Sample_Paper_Title.pdf) | Author A, Author B | [Journal Name](https://journal-url.com) | 2023 |\n"
+    default_content += f"{papers_end}\n"
+
+    with open(readme_path, 'w') as f:
+        f.write(default_content)
+    print(f"Created default README.md at {readme_path}")
+
 # Function to update the main README.md with categories
 def update_main_readme(categories):
     main_readme = 'README.md'
@@ -93,6 +127,10 @@ def update_main_readme(categories):
 # Function to create or update a subdirectory README.md
 def create_or_update_sub_readme(current_dir, subdirectories, papers_info):
     readme_path = os.path.join(current_dir, 'README.md')
+    
+    # If README.md does not exist, create it with default content
+    if not os.path.exists(readme_path):
+        create_default_readme(readme_path)
     
     # Define markers for subcategories and papers sections
     subcat_start = '<!-- SUBCATEGORIES_SECTION_START -->'
@@ -138,7 +176,7 @@ def create_or_update_sub_readme(current_dir, subdirectories, papers_info):
     else:
         # Remove Subcategories section if it exists
         update_section(readme_path, subcat_start, subcat_end, "")
-
+    
     # Update Papers section
     update_section(readme_path, papers_start, papers_end, papers_content)
 
