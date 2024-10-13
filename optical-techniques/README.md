@@ -7,8 +7,8 @@ Description for Category1.
 <!-- SUBCATEGORIES_TABLE_START -->
 | Subcategory Name | Description |
 |------------------|-------------|
-| [SubCategoryA](SubCategoryA/) | Description of SubCategoryA |
-| [SubCategoryB](SubCategoryB/) | Description of SubCategoryB |
+| No Subcategories | - |
+
 <!-- SUBCATEGORIES_TABLE_END -->
 
 ## Papers
@@ -16,5 +16,6 @@ Description for Category1.
 <!-- PAPERS_TABLE_START -->
 | Title | Authors | Journal | Year |
 |-------|---------|---------|------|
-| [Sample Paper Title](Sample_Paper_Title.pdf) | Author A, Author B | [Journal Name](https://journal-url.com) | 2023 |
+| [Parametric modulation of an atomic magnetometer](Parametric%20modulation%20of%20an%20atomic%20magnetometer.pdf) | Li, Wakai, Walker | [Applied Physics Letters](http://dx.doi.org/10.1063/1.2357553) | 2006 |
+
 <!-- PAPERS_TABLE_END -->

@@ -7,8 +7,8 @@ Description for Category1.
 <!-- SUBCATEGORIES_TABLE_START -->
 | Subcategory Name | Description |
 |------------------|-------------|
-| [SubCategoryA](SubCategoryA/) | Description of SubCategoryA |
-| [SubCategoryB](SubCategoryB/) | Description of SubCategoryB |
+| No Subcategories | - |
+
 <!-- SUBCATEGORIES_TABLE_END -->
 
 ## Papers
@@ -16,5 +16,6 @@ Description for Category1.
 <!-- PAPERS_TABLE_START -->
 | Title | Authors | Journal | Year |
 |-------|---------|---------|------|
-| [Sample Paper Title](Sample_Paper_Title.pdf) | Author A, Author B | [Journal Name](https://journal-url.com) | 2023 |
+| No papers found | - | - | - |
+
 <!-- PAPERS_TABLE_END -->

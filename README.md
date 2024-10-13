@@ -14,3 +14,12 @@ This repository helps organize and manage scientific paper PDFs for various rese
 | [crosstalk](crosstalk/) | Description of crosstalk |
 | [optical-techniques](optical-techniques/) | Description of optical-techniques |
 | [vector-magnetometry](vector-magnetometry/) | Description of vector-magnetometry |
+
+<!-- CATEGORIES_TABLE_START -->
+| Category Name | Description |
+|---------------|-------------|
+| [crosstalk](crosstalk/) | Description of crosstalk |
+| [optical-techniques](optical-techniques/) | Description of optical-techniques |
+| [vector-magnetometry](vector-magnetometry/) | Description of vector-magnetometry |
+
+<!-- CATEGORIES_TABLE_END -->
