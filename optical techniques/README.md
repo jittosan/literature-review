@@ -1,4 +1,4 @@
-# Papers in cat1
+# Papers in optical techniques
 
 | Title | Authors | Journal | Year |
 |-------|---------|---------|------|

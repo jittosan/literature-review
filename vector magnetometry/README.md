@@ -1,4 +1,4 @@
-# Papers in cat2
+# Papers in vector magnetometry
 
 | Title | Authors | Journal | Year |
 |-------|---------|---------|------|
