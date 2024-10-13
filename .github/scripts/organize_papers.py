@@ -35,14 +35,15 @@ def fetch_crossref_metadata(doi):
         return None
 
 # Function to update a section between start and end markers
-def update_table_section(readme_path, start_marker, end_marker, new_table_content):
+def update_section(readme_path, start_marker, end_marker, new_content):
     if not os.path.exists(readme_path):
         print(f"README file {readme_path} does not exist. Creating a new one.")
         with open(readme_path, 'w') as f:
             # Initialize README with a header
             f.write("# " + os.path.basename(os.path.dirname(readme_path)) + "\n\n")
-            # Insert the new table content
-            f.write(new_table_content)
+            # Insert the new content if provided
+            if new_content:
+                f.write(new_content)
         return
 
     with open(readme_path, 'r') as f:
@@ -54,18 +55,24 @@ def update_table_section(readme_path, start_marker, end_marker, new_table_conten
         re.DOTALL
     )
 
-    # New table content with markers
-    new_section = f"{start_marker}\n{new_table_content}\n{end_marker}"
-
-    if pattern.search(content):
-        # Replace existing section
-        updated_content = pattern.sub(new_section, content)
+    if new_content:
+        # New content with markers
+        new_section = f"{start_marker}\n{new_content}\n{end_marker}"
+        if pattern.search(content):
+            # Replace existing section
+            updated_content = pattern.sub(new_section, content)
+        else:
+            # If markers not found, append the new section
+            updated_content = content.strip() + "\n\n" + new_section
     else:
-        # If markers not found, append the new section
-        updated_content = content.strip() + "\n\n" + new_section
+        # If no content provided, remove the section between markers
+        updated_content = pattern.sub("", content)
+        # Clean up any extra newlines introduced
+        updated_content = re.sub(r'\n{3,}', '\n\n', updated_content).strip()
 
     with open(readme_path, 'w') as f:
-        f.write(updated_content)
+        # Add a newline at the end if content exists
+        f.write(updated_content + "\n" if updated_content else "")
 
 # Function to update the main README.md with categories
 def update_main_readme(categories):
@@ -81,33 +88,35 @@ def update_main_readme(categories):
         table_rows += f"| [{category}]({category_link}) | Description of {category} |\n"
 
     new_table = f"{table_header}\n{table_rows}"
-    update_table_section(main_readme, start_marker, end_marker, new_table)
+    update_section(main_readme, start_marker, end_marker, new_table)
 
 # Function to create or update a subdirectory README.md
 def create_or_update_sub_readme(current_dir, subdirectories, papers_info):
     readme_path = os.path.join(current_dir, 'README.md')
     
-    # Define markers for subcategories and papers tables
-    subcat_start = '<!-- SUBCATEGORIES_TABLE_START -->'
-    subcat_end = '<!-- SUBCATEGORIES_TABLE_END -->'
+    # Define markers for subcategories and papers sections
+    subcat_start = '<!-- SUBCATEGORIES_SECTION_START -->'
+    subcat_end = '<!-- SUBCATEGORIES_SECTION_END -->'
     papers_start = '<!-- PAPERS_TABLE_START -->'
     papers_end = '<!-- PAPERS_TABLE_END -->'
 
-    # Create tables content
-    # Subcategories Table (only if subdirectories exist)
+    # Create Subcategories Section Content (only if subdirectories exist)
     if subdirectories:
-        subcat_header = "| Subcategory Name | Description |\n|------------------|-------------|"
+        subcat_header = "## Subcategories\n\n"
+        subcat_table_header = "| Subcategory Name | Description |\n|------------------|-------------|"
         subcat_rows = ""
         for sub in sorted(subdirectories):
             sub_link = quote(sub) + '/'
             subcat_rows += f"| [{sub}]({sub_link}) | Description of {sub} |\n"
-        subcat_table = f"{subcat_header}\n{subcat_rows}"
+        subcat_table = f"{subcat_table_header}\n{subcat_rows}"
+        subcat_content = subcat_header + subcat_table
     else:
-        subcat_table = ""  # No subcategories table to include
+        subcat_content = ""  # No subcategories, so no content
 
-    # Papers Table
+    # Create Papers Table Content
     if papers_info:
-        papers_header = "| Title | Authors | Journal | Year |\n|-------|---------|---------|------|"
+        papers_header = "## Papers\n\n"
+        papers_table_header = "| Title | Authors | Journal | Year |\n|-------|---------|---------|------|"
         papers_rows = ""
         for info in papers_info:
             # URL-encode the PDF path for the link
@@ -119,42 +128,31 @@ def create_or_update_sub_readme(current_dir, subdirectories, papers_info):
             else:
                 journal_link = info['journal']
             papers_rows += f"| {title_link} | {info['authors']} | {journal_link} | {info['year']} |\n"
-        papers_table = f"{papers_header}\n{papers_rows}"
+        papers_table = f"{papers_table_header}\n{papers_rows}"
     else:
+        papers_header = "## Papers\n\n"
         papers_table = "| Title | Authors | Journal | Year |\n|-------|---------|---------|------|\n| No papers found | - | - | - |\n"
+    
+    papers_content = papers_header + papers_table
 
-    # Update subcategories table only if there are subdirectories
-    if subcat_table:
-        update_table_section(readme_path, subcat_start, subcat_end, subcat_table)
+    # Combine Subcategories and Papers Content with Markers
+    if subcat_content:
+        # Both Subcategories and Papers
+        complete_content = f"{subcat_start}\n{subcat_content}\n{subcat_end}\n\n{papers_start}\n{papers_table_header}\n{papers_rows}\n{papers_end}"
     else:
-        # Remove the subcategories section if it exists
-        remove_section_between_markers(readme_path, subcat_start, subcat_end)
+        # Only Papers
+        complete_content = f"{papers_start}\n{papers_table_header}\n{papers_rows}\n{papers_end}"
 
-    # Update papers table
-    update_table_section(readme_path, papers_start, papers_end, papers_table)
+    # Update or remove Subcategories section
+    if subdirectories:
+        # Update Subcategories section
+        update_section(readme_path, subcat_start, subcat_end, subcat_content)
+    else:
+        # Remove Subcategories section if it exists
+        update_section(readme_path, subcat_start, subcat_end, "")
 
-# Function to remove a section between start and end markers
-def remove_section_between_markers(readme_path, start_marker, end_marker):
-    if not os.path.exists(readme_path):
-        return
-
-    with open(readme_path, 'r') as f:
-        content = f.read()
-
-    # Regex to find content between markers
-    pattern = re.compile(
-        f"{re.escape(start_marker)}.*?{re.escape(end_marker)}",
-        re.DOTALL
-    )
-
-    # Remove the section
-    updated_content = pattern.sub("", content)
-
-    # Clean up any extra newlines introduced
-    updated_content = re.sub(r'\n{3,}', '\n\n', updated_content).strip()
-
-    with open(readme_path, 'w') as f:
-        f.write(updated_content + "\n" if updated_content else "")
+    # Update Papers section
+    update_section(readme_path, papers_start, papers_end, papers_table if papers_info else "| Title | Authors | Journal | Year |\n|-------|---------|---------|------|\n| No papers found | - | - | - |\n")
 
 # Main function to organize papers
 def organize_papers():
