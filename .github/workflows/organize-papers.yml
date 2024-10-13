@@ -30,7 +30,7 @@ jobs:
           pip install PyPDF2 requests
 
       - name: Run Organize Script
-        run: python organize_papers.py
+        run: python .github/scripts/organize_papers.py
 
       - name: Configure Git
         run: |
