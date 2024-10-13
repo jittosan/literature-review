@@ -27,7 +27,7 @@ jobs:
           pip install --upgrade PyPDF2 requests
 
       - name: Run Organize Script
-        run: python organize_papers.py
+        run: python .github/scripts/organize_papers.py
 
       - name: Commit Changes
         run: |
