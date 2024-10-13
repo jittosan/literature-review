@@ -1,4 +1,4 @@
-# Papers in vector magnetometry
+# Papers in vector-magnetometry
 
 | Title | Authors | Journal | Year |
 |-------|---------|---------|------|

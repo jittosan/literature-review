@@ -15,5 +15,5 @@ The following categories are available:
 | Category Name | Description |
 |---------------|-------------|
 | [crosstalk](crosstalk/) | Description of crosstalk |
-| [optical techniques](optical techniques/) | Description of optical techniques |
-| [vector magnetometry](vector magnetometry/) | Description of vector magnetometry |
+| [optical-techniques](optical-techniques/) | Description of optical-techniques |
+| [vector-magnetometry](vector-magnetometry/) | Description of vector-magnetometry |

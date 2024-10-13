@@ -1,4 +1,4 @@
-# Papers in optical techniques
+# Papers in optical-techniques
 
 | Title | Authors | Journal | Year |
 |-------|---------|---------|------|
