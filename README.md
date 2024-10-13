@@ -14,6 +14,6 @@ The following categories are available:
 
 | Category Name | Description |
 |---------------|-------------|
-| [cat1](cat1/) | Description of cat1 |
-| [cat2](cat2/) | Description of cat2 |
-| [cat3](cat3/) | Description of cat3 |
+| [crosstalk](crosstalk/) | Description of crosstalk |
+| [optical techniques](optical techniques/) | Description of optical techniques |
+| [vector magnetometry](vector magnetometry/) | Description of vector magnetometry |
