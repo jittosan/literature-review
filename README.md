@@ -10,8 +10,10 @@ This repository helps organize and manage scientific paper PDFs for various rese
 
 ## Categories
 
-| Category Name | Description                      |
-|---------------|----------------------------------|
-| [cat1](cat1/) | Description of category 1 |
-| [cat2](cat2/) | Description of category 2 |
-| [cat3](cat3/) | Description of category 3 |
+The following categories are available:
+
+| Category Name | Description |
+|---------------|-------------|
+| [cat1](cat1/) | Description of cat1 |
+| [cat2](cat2/) | Description of cat2 |
+| [cat3](cat3/) | Description of cat3 |
